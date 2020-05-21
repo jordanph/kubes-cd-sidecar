@@ -7,7 +7,6 @@ pub struct CheckRunDetails<'a> {
     pub check_run_id: i32,
     pub repo_name: &'a str,
     pub status: &'a str,
-    pub started_at: &'a str,
     pub finished_at: Option<&'a str>,
     pub logs: &'a str,
     pub conclusion: &'a str,

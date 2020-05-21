@@ -97,7 +97,6 @@ async fn poll_pod<'a>(
                     .value
                     .as_ref();
 
-                let Time(started_at) = terminated.started_at.as_ref().unwrap();
                 let Time(finished_at) = terminated.finished_at.as_ref().unwrap();
 
                 let conclusion = if terminated.exit_code == 0 {
@@ -110,14 +109,12 @@ async fn poll_pod<'a>(
 
                 let logs = get_container_logs(&pods, pod_name, &container_name).await?;
 
-                let rfc_started_at = &started_at.to_rfc3339();
                 let rfc_finished_at = &finished_at.to_rfc3339();
 
                 let check_run_details = CheckRunDetails {
                     check_run_id: check_run_id.unwrap().parse().unwrap(),
                     repo_name,
                     status: "completed",
-                    started_at: rfc_started_at,
                     finished_at: Some(rfc_finished_at),
                     logs: &logs,
                     conclusion,
