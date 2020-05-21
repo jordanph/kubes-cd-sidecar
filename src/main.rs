@@ -22,6 +22,8 @@ async fn main() {
         .parse::<u32>()
         .unwrap();
 
+    let repo_name = std::env::var("REPO_NAME").unwrap();
+
     let kubes_cd_controller_base_url = std::env::var("KUBES_CD_CONTROLLER_BASE_URL").unwrap();
 
     let kubes_cd_controller = KubesCDControllerClient {
@@ -32,7 +34,7 @@ async fn main() {
 
     info!("Polling the pods...");
 
-    match poll_pod(&pod_name, &kubes_cd_controller).await {
+    match poll_pod(&pod_name, &kubes_cd_controller, &repo_name).await {
         Ok(_) => info!("All pods have finished! Spinning down..."),
         Err(err) => {
             error!("Error occurred while polling pods {}", err);
@@ -44,7 +46,8 @@ async fn main() {
 
 async fn poll_pod<'a>(
     pod_name: &str,
-    controller_client: &'a KubesCDControllerClient<'a>
+    controller_client: &'a KubesCDControllerClient<'a>,
+    repo_name: &str,
 ) -> Result<(), Box<dyn std::error::Error>> {
     let client = Client::infer().await?;
     let namespace = std::env::var("NAMESPACE").unwrap_or_else(|_| "default".into());
@@ -112,6 +115,7 @@ async fn poll_pod<'a>(
 
                 let check_run_details = CheckRunDetails {
                     check_run_id: check_run_id.unwrap().parse().unwrap(),
+                    repo_name,
                     status: "completed",
                     started_at: rfc_started_at,
                     finished_at: Some(rfc_finished_at),

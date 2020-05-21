@@ -5,6 +5,7 @@ use serde_derive::Serialize;
 #[derive(Serialize)]
 pub struct CheckRunDetails<'a> {
     pub check_run_id: i32,
+    pub repo_name: &'a str,
     pub status: &'a str,
     pub started_at: &'a str,
     pub finished_at: Option<&'a str>,
