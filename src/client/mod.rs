@@ -1,34 +1,38 @@
-use serde_derive::Serialize;
-use reqwest::header::USER_AGENT;
 use log::info;
+use reqwest::header::USER_AGENT;
+use serde_derive::Serialize;
 
 #[derive(Serialize)]
-pub struct CheckRunDetails {
-  pub name: String,
-  pub check_run_id: i32,
-  pub repo_name: String,
-  pub status: String,
-  pub started_at: String,
-  pub finished_at: Option<String>,
-  pub logs: String,
-  pub conclusion: String
+pub struct CheckRunDetails<'a> {
+    pub check_run_id: i32,
+    pub status: &'a str,
+    pub started_at: &'a str,
+    pub finished_at: Option<&'a str>,
+    pub logs: &'a str,
+    pub conclusion: &'a str,
 }
 
-pub struct KubesCDControllerClient {
+pub struct KubesCDControllerClient<'a> {
     pub installation_id: u32,
-    pub pod_name: String,
-    pub base_url: String
+    pub pod_name: &'a str,
+    pub base_url: &'a str,
 }
 
-impl KubesCDControllerClient {
-    pub async fn update_check_run(&self, check_run_details: &CheckRunDetails) -> Result<(), Box<dyn std::error::Error>> {
-        let request_url = format!("{}/update-check-run/{}", self.base_url, self.installation_id);
+impl<'a> KubesCDControllerClient<'a> {
+    pub async fn update_check_run<'b>(
+        &self,
+        check_run_details: &CheckRunDetails<'b>,
+    ) -> Result<(), Box<dyn std::error::Error>> {
+        let request_url = format!(
+            "{}/update-check-run/{}",
+            self.base_url, self.installation_id
+        );
 
         info!("Updating check run...");
 
         reqwest::Client::new()
             .post(&request_url)
-            .header(USER_AGENT, self.pod_name.clone())
+            .header(USER_AGENT, self.pod_name)
             .json(&check_run_details)
             .send()
             .await?;
