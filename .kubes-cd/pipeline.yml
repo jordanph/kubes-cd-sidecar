@@ -6,7 +6,7 @@ steps:
       - "--dockerfile=/app/Dockerfile"
       - "--context=dir:///app"
       - "--cache=true"
-      - "--cache-repo jordanph/kubes-sidecar-cache"
+      - "--cache-repo=jordanph/kubes-sidecar-cache"
       - "--destination=jordanph/kubes-sidecar:latest"
     mountSecret:
       - name: docker-config
