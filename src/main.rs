@@ -9,7 +9,7 @@ use std::time;
 
 mod client;
 
-use client::{CheckRunDetails, KubesCDControllerClient};
+use client::{CheckRunDetails, KubesCDControllerClient, PodFinishedSuccessfullyRequest};
 
 #[tokio::main]
 async fn main() {
@@ -58,6 +58,8 @@ async fn poll_pod<'a>(
 
     let mut completed_container: Vec<String> = Vec::new();
 
+    let mut all_steps_successful = true;
+
     loop {
         let pod: Pod = pods.get(pod_name).await?;
 
@@ -102,6 +104,7 @@ async fn poll_pod<'a>(
                 let conclusion = if terminated.exit_code == 0 {
                     "success"
                 } else {
+                    all_steps_successful = false;
                     "failure"
                 };
 
@@ -130,8 +133,24 @@ async fn poll_pod<'a>(
             }
         }
 
-        if completed_container.len() > container_statuses.len() - 1 {
+        if completed_container.len() == container_statuses.len() - 1 {
             info!("All containers have finished!");
+
+            if all_steps_successful {
+                info!("All steps completed successfully. Notifying the controller...");
+
+                let step_section: i32 = std::env::var("STEP_SECTION").unwrap().parse().unwrap();
+                let commit_sha = std::env::var("COMMIT_SHA").unwrap();
+    
+                let pod_finished_successfully = PodFinishedSuccessfullyRequest {
+                    step_section,
+                    repo_name,
+                    commit_sha: &commit_sha,
+                };
+    
+                controller_client.notify_finished_successfully(&pod_finished_successfully).await?;
+    
+            }
 
             break;
         }

@@ -12,6 +12,13 @@ pub struct CheckRunDetails<'a> {
     pub conclusion: &'a str,
 }
 
+#[derive(Serialize)]
+pub struct PodFinishedSuccessfullyRequest<'a> {
+    pub step_section: i32,
+    pub repo_name: &'a str,
+    pub commit_sha: &'a str,
+}
+
 pub struct KubesCDControllerClient<'a> {
     pub installation_id: u32,
     pub pod_name: &'a str,
@@ -34,6 +41,27 @@ impl<'a> KubesCDControllerClient<'a> {
             .post(&request_url)
             .header(USER_AGENT, self.pod_name)
             .json(&check_run_details)
+            .send()
+            .await?;
+
+        Ok(())
+    }
+
+    pub async fn notify_finished_successfully<'b>(
+        &self,
+        pod_finished_successfully_request: &PodFinishedSuccessfullyRequest<'b>,
+    ) -> Result<(), Box<dyn std::error::Error>> {
+        let request_url = format!(
+            "{}/pod-finished/{}",
+            self.base_url, self.installation_id
+        );
+
+        info!("Notifying all steps completed successfully...");
+
+        reqwest::Client::new()
+            .post(&request_url)
+            .header(USER_AGENT, self.pod_name)
+            .json(&pod_finished_successfully_request)
             .send()
             .await?;
 
