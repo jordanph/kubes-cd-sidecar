@@ -141,11 +141,13 @@ async fn poll_pod<'a>(
 
                 let step_section: i32 = std::env::var("STEP_SECTION").unwrap().parse().unwrap();
                 let commit_sha = std::env::var("COMMIT_SHA").unwrap();
+                let branch_name = std::env::var("BRANCH_NAME").unwrap();
     
                 let pod_finished_successfully = PodFinishedSuccessfullyRequest {
                     step_section,
                     repo_name,
                     commit_sha: &commit_sha,
+                    branch_name: &branch_name,
                 };
     
                 controller_client.notify_finished_successfully(&pod_finished_successfully).await?;
