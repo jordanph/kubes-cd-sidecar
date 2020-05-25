@@ -17,6 +17,7 @@ pub struct PodFinishedSuccessfullyRequest<'a> {
     pub step_section: i32,
     pub repo_name: &'a str,
     pub commit_sha: &'a str,
+    pub branch_name: &'a str,
 }
 
 pub struct KubesCDControllerClient<'a> {
